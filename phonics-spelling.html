@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Phonics 串字小達人｜互動英文串字練習</title>
+<style>
+:root{
+  --bg:#FFF7EC; --card:#FFFFFF; --ink:#3A2E2A; --muted:#9A8B84;
+  --coral:#FF6B6B; --teal:#2EC4B6; --sun:#FFC53D; --grape:#7C6FF0; --sky:#4DABF7; --leaf:#51CF66;
+  --pink:#FF8FAB; --orange:#FFA94D;
+  --radius:18px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{margin:0; font-family:"PingFang HK","PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.6;}
+.wrap{max-width:560px; margin:0 auto; padding:0 16px 120px;}
+/* ---------- Hero ---------- */
+.hero{background:linear-gradient(135deg,#7C6FF0 0%,#4DABF7 60%,#2EC4B6 100%); color:#fff;
+  border-radius:0 0 32px 32px; padding:34px 22px 26px; text-align:center; position:relative; overflow:hidden;}
+.hero::before{content:"🔤"; position:absolute; font-size:120px; opacity:.15; right:-10px; top:-10px; transform:rotate(12deg);}
+.hero::after{content:"✏️"; position:absolute; font-size:90px; opacity:.12; left:6px; bottom:-8px; transform:rotate(-14deg);}
+.hero h1{margin:0 0 6px; font-size:30px; letter-spacing:1px;}
+.hero p{margin:6px 0; font-size:15px; opacity:.95;}
+.badges{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
+.badge{background:rgba(255,255,255,.22); border:1.5px solid rgba(255,255,255,.55); color:#fff;
+  padding:5px 14px; border-radius:999px; font-size:13px; font-weight:700;}
+.hero-cta{margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+.btn{border:none; border-radius:999px; padding:13px 26px; font-size:16px; font-weight:800; cursor:pointer;
+  font-family:inherit; transition:transform .12s, box-shadow .12s;}
+.btn:active{transform:scale(.96);}
+.btn-white{background:#fff; color:#5B4FD6; box-shadow:0 4px 14px rgba(0,0,0,.18);}
+.btn-coral{background:var(--coral); color:#fff; box-shadow:0 4px 0 #D94F4F;}
+.btn-teal{background:var(--teal); color:#fff; box-shadow:0 4px 0 #1E9E92;}
+.btn-grape{background:var(--grape); color:#fff; box-shadow:0 4px 0 #5F54C4;}
+.btn-sun{background:var(--sun); color:#5B4300; box-shadow:0 4px 0 #D9A52E;}
+.btn-ghost{background:#fff; color:var(--ink); border:2px solid #EAD9C2; box-shadow:none;}
+.btn[disabled]{opacity:.45; cursor:not-allowed; box-shadow:none;}
+/* ---------- Flow strip ---------- */
+.flow{background:var(--card); border-radius:var(--radius); margin:-4px 16px 0; padding:18px;
+  box-shadow:0 6px 20px rgba(0,0,0,.07); position:relative; z-index:2;}
+.flow h2{margin:0 0 4px; font-size:18px;}
+.flow p{margin:0 0 12px; color:var(--muted); font-size:13.5px;}
+.steps{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; text-align:center;}
+.step{background:var(--bg); border-radius:14px; padding:10px 4px; font-size:12px; font-weight:700; cursor:pointer; border:2px solid transparent;}
+.step .em{font-size:24px; display:block;}
+.step.on{border-color:var(--grape); background:#F1EEFF;}
+/* ---------- Tabs ---------- */
+.tabs{position:sticky; top:0; z-index:50; background:rgba(255,247,236,.96); backdrop-filter:blur(6px);
+  display:flex; gap:6px; padding:10px 16px; max-width:560px; margin:18px auto 0;}
+.tab{flex:1; border:none; background:#fff; border-radius:14px; padding:10px 2px; font-size:14px; font-weight:800;
+  font-family:inherit; color:var(--muted); cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.tab .em{display:block; font-size:20px;}
+.tab.on{background:linear-gradient(135deg,var(--grape),var(--sky)); color:#fff;}
+/* ---------- Sections ---------- */
+section.panel{background:var(--card); border-radius:var(--radius); padding:20px 16px; margin:14px 0;
+  box-shadow:0 6px 20px rgba(0,0,0,.06); display:none;}
+section.panel.on{display:block; animation:fade .25s;}
+@keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1;}}
+section.panel h2{margin:0 0 4px; font-size:20px;}
+.hint{color:var(--muted); font-size:13.5px; margin:0 0 14px;}
+label.lbl{display:block; font-weight:800; font-size:14px; margin:14px 0 6px;}
+input[type=text], select{width:100%; padding:13px 14px; border:2px solid #EAD9C2; border-radius:14px;
+  font-size:16px; font-family:inherit; background:#FFFEFB; color:var(--ink);}
+input[type=text]:focus, select:focus{outline:none; border-color:var(--grape);}
+.word-input-row{display:flex; gap:8px; align-items:center; margin-bottom:8px;}
+.word-input-row input{flex:1;}
+.tick{font-size:22px; min-width:30px; text-align:center;}
+.tick.ok{color:var(--leaf);} .tick.bad{color:#D0BFAE;}
+.breakdown{font-size:14px; background:#F6F1FF; border-radius:12px; padding:8px 12px; margin-top:6px; display:none;}
+.breakdown.show{display:block;}
+.breakdown .seg{font-weight:800; color:#5B4FD6; letter-spacing:1px;}
+.headword{font-size:12.5px; color:var(--muted);}
+.row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+.count-sel{width:auto; flex:1;}
+/* ---------- Phoneme cards ---------- */
+.phonemes{display:flex; gap:8px; flex-wrap:wrap; margin:12px 0;}
+.phon{flex:1 1 0; min-width:56px; border-radius:14px; padding:12px 4px; text-align:center; cursor:pointer;
+  color:#fff; font-weight:800; font-size:17px; box-shadow:0 3px 0 rgba(0,0,0,.12); transition:transform .12s;}
+.phon:active{transform:scale(.93);}
+.phon small{display:block; font-size:11px; font-weight:600; opacity:.85;}
+.phon.hl{outline:4px solid var(--sun); transform:scale(1.06);}
+.c0{background:#FF6B6B;} .c1{background:#4DABF7;} .c2{background:#2EC4B6;} .c3{background:#7C6FF0;}
+.c4{background:#FFA94D;} .c5{background:#FF8FAB;} .c6{background:#51CF66;} .c7{background:#66D9E8;}
+/* ---------- Slots & tiles ---------- */
+.slots{display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; min-height:64px;
+  background:#FFF9F0; border:2px dashed #E3CFA8; border-radius:14px; padding:12px;}
+.slot{min-width:56px; height:56px; border-radius:12px; background:#fff; border:2px solid #EAD9C2;
+  display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px; color:#B9A48E;}
+.slot.filled{border-color:var(--teal); color:var(--ink); cursor:pointer;}
+.slot.wrong{border-color:var(--coral); background:#FFE9E9;}
+.slot.right{border-color:var(--leaf); background:#E9FBEF;}
+.tray{display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; min-height:64px;}
+.tile{background:linear-gradient(180deg,#8B80FF,#6C63E8); color:#fff; border-radius:12px; padding:12px 16px;
+  font-weight:800; font-size:18px; cursor:grab; box-shadow:0 4px 0 #4E47B8; user-select:none;}
+.tile:active{cursor:grabbing; transform:scale(.95);}
+.tile.used{opacity:.25; pointer-events:none;}
+.toolbar{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0;}
+.tool{flex:1; min-width:100px; border:2px solid #EAD9C2; background:#fff; border-radius:12px; padding:9px 4px;
+  font-family:inherit; font-weight:800; font-size:13.5px; cursor:pointer; color:var(--ink);}
+.tool.on{background:#FFF3D6; border-color:var(--sun);}
+.big-check{width:100%; margin-top:10px; font-size:17px; padding:15px;}
+.result{border-radius:14px; padding:14px; margin-top:12px; font-weight:700; display:none;}
+.result.show{display:block;}
+.result.good{background:#E9FBEF; color:#2B7A3D;}
+.result.bad{background:#FFE9E9; color:#B03A3A;}
+/* ---------- Quiz ---------- */
+.quiz-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+.quiz-tag{background:#F1EEFF; color:#5B4FD6; border-radius:999px; padding:5px 14px; font-size:13px; font-weight:800;}
+.timer{font-size:22px; font-weight:800; color:var(--coral); font-variant-numeric:tabular-nums;}
+.timer.low{animation:blink 1s infinite;}
+@keyframes blink{50%{opacity:.4;}}
+.listen-big{width:100%; font-size:18px; padding:16px; margin:8px 0;}
+.mistake{border-radius:14px; background:#FFF9F0; border:2px solid #EAD9C2; padding:12px; margin-top:12px; display:none;}
+.mistake.show{display:block;}
+.mistake .note{font-size:14px; margin-top:8px;}
+.mini-phon{display:inline-block; border-radius:8px; padding:4px 10px; margin:2px; font-weight:800; color:#fff; font-size:15px;}
+.mini-phon.tricky{background:var(--coral); box-shadow:0 0 0 3px #FFC9C9;}
+.mini-phon.okp{background:var(--leaf);}
+/* ---------- Word bank ---------- */
+.bank-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+.bank-count{font-size:15px; font-weight:800;}
+.bank-count b{color:var(--grape); font-size:20px;}
+.bank-tools{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;}
+.wcard{background:#FFFEFB; border:2px solid #F0E4CE; border-radius:14px; padding:12px 14px; margin-bottom:10px; cursor:pointer;}
+.wcard .w{font-size:19px; font-weight:800;}
+.wcard .segline{font-size:13.5px; color:#5B4FD6; font-weight:700; margin-top:2px;}
+.wcard .meta{display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:13px; color:var(--muted);}
+.acc{font-weight:800; padding:3px 12px; border-radius:999px; font-size:13px;}
+.acc.high{background:#E9FBEF; color:#2B7A3D;} .acc.mid{background:#FFF3D6; color:#9A6B00;} .acc.low{background:#FFE9E9; color:#B03A3A;} .acc.na{background:#F1EFEA; color:#9A8B84;}
+.wcard .del{color:#D0BFAE; border:none; background:none; font-size:16px; cursor:pointer;}
+.empty{text-align:center; color:var(--muted); padding:30px 10px; font-size:14px;}
+footer.site{text-align:center; color:var(--muted); font-size:12.5px; padding:10px 20px 40px; max-width:560px; margin:0 auto;}
+footer.site a{color:var(--grape);}
+.guide-bubble{background:#FFF3D6; border-radius:14px; padding:10px 14px; font-size:14px; margin:10px 0; display:none;}
+.guide-bubble.show{display:block;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🔤 Phonics 串字小達人</h1>
+  <p>聽音素 → 拖字卡 → 拼出生字<br>用 Phonics 自然拼讀法，輕鬆搞掂英文串字！</p>
+  <div class="badges">
+    <span class="badge">👶 適合 4–12 歲</span>
+    <span class="badge">🗣️ 音素發音示範</span>
+    <span class="badge">📚 個人字庫</span>
+  </div>
+  <div class="hero-cta">
+    <button class="btn btn-white" onclick="goTab('add')">＋ 加入生字</button>
+    <button class="btn btn-white" onclick="goTab('practice')">▶ 開始練習</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="flow">
+    <h2>📱 四步串字之旅</h2>
+    <p>跟住下面四個步驟，由零開始建立你嘅英文生字庫：</p>
+    <div class="steps">
+      <div class="step" data-goto="add"><span class="em">✍️</span>1. 加單詞</div>
+      <div class="step" data-goto="practice"><span class="em">🧩</span>2. 練習</div>
+      <div class="step" data-goto="quiz"><span class="em">📝</span>3. 測驗</div>
+      <div class="step" data-goto="bank"><span class="em">📚</span>4. 字庫</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="add"><span class="em">✍️</span>加單詞</button>
+    <button class="tab" data-tab="practice"><span class="em">🧩</span>練習</button>
+    <button class="tab" data-tab="quiz"><span class="em">📝</span>測驗</button>
+    <button class="tab" data-tab="bank"><span class="em">📚</span>字庫</button>
+  </div>
+
+  <!-- ============ ADD ============ -->
+  <section class="panel on" id="panel-add">
+    <h2>✍️ 添加任務單詞</h2>
+    <p class="hint">輸入默書／生字，系統會即時做 <b>Phonics 拆解</b>，等你可以逐個音素咁學。</p>
+    <label class="lbl">要幾個單詞？</label>
+    <div class="row">
+      <select id="wordCount" class="count-sel" onchange="renderWordInputs()">
+        <option value="1">1 個</option><option value="2">2 個</option>
+        <option value="3" selected>3 個</option><option value="4">4 個</option>
+        <option value="5">5 個</option>
+      </select>
+      <button class="btn btn-grape" onclick="addAllWords()">加入字庫 →</button>
+    </div>
+    <div id="wordInputs" style="margin-top:12px;"></div>
+    <p class="hint" style="margin-top:10px;">💡 輸入 1 秒後自動檢查；分析引擎支援詞目（Headword）分析，例如 <i>went → go</i>、<i>horses → horse</i>。</p>
+  </section>
+
+  <!-- ============ PRACTICE ============ -->
+  <section class="panel" id="panel-practice">
+    <h2>🧩 Phonics 練習</h2>
+    <p class="hint">撳音素卡聽發音 🔊，將下面嘅字卡拖（或撳）到正確嘅方塊，拼出成個單詞！</p>
+    <label class="lbl">揀一個單詞嚟練習</label>
+    <div class="row">
+      <select id="practiceWord" class="count-sel" onchange="startPractice()"></select>
+      <button class="btn btn-ghost" onclick="startPractice()">↻</button>
+    </div>
+    <div class="toolbar">
+      <button class="tool" id="btnWhole" onclick="speakWhole()">🔊 整詞</button>
+      <button class="tool" id="btnSlow" onclick="toggleSlow()">🐢 0.5x 慢速</button>
+      <button class="tool" onclick="replayGuide()">🎬 重播導覽</button>
+    </div>
+    <div class="guide-bubble" id="guideBubble"></div>
+    <div class="phonemes" id="phonemeCards"></div>
+    <label class="lbl">將字卡放到正確位置（Drop graphemes in order）</label>
+    <div class="slots" id="pracSlots"></div>
+    <label class="lbl">字卡堆（Your grapheme tiles）</label>
+    <div class="tray" id="pracTray"></div>
+    <button class="btn btn-teal big-check" id="pracCheck" onclick="checkPractice()" disabled>✅ 檢查</button>
+    <div class="result" id="pracResult"></div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="panel" id="panel-quiz">
+    <h2>📝 串字測驗</h2>
+    <p class="hint">聽發音拼出單詞，限時挑戰！錯咗唔緊要，系統會話你知邊個音素最易錯 ✅</p>
+    <div id="quizSetup">
+      <label class="lbl">難度</label>
+      <div class="row">
+        <select id="quizDiff" class="count-sel">
+          <option value="easy">😊 簡單（短單詞）</option>
+          <option value="normal" selected>🙂 普通</option>
+          <option value="hard">😈 困難（長單詞）</option>
+        </select>
+      </div>
+      <button class="btn btn-coral big-check" onclick="startQuiz()">開始測驗 🚀</button>
+    </div>
+    <div id="quizPlay" style="display:none;">
+      <div class="quiz-top">
+        <span class="quiz-tag" id="quizTag">難度：普通</span>
+        <span class="quiz-tag" id="quizProg">第 1/3 個單詞</span>
+        <span class="timer" id="quizTimer">00:50</span>
+      </div>
+      <button class="btn btn-sun listen-big" onclick="speakQuizWord()">🔊 撳我聽單詞</button>
+      <p class="hint" style="text-align:center;">輪到你 — 拼出這個單詞！</p>
+      <div class="slots" id="quizSlots"></div>
+      <div class="tray" id="quizTray"></div>
+      <button class="btn btn-teal big-check" id="quizCheck" onclick="checkQuiz()">✅ 交卷</button>
+      <div class="result" id="quizResult"></div>
+      <div class="mistake" id="quizMistake"></div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn btn-ghost" style="flex:1;" onclick="nextQuizWord()" id="quizNext" disabled>下一個 →</button>
+      </div>
+    </div>
+    <div id="quizDone" style="display:none; text-align:center; padding:20px 0;">
+      <div style="font-size:54px;">🏆</div>
+      <h3 id="quizScore" style="margin:8px 0;"></h3>
+      <p class="hint" id="quizScoreSub"></p>
+      <button class="btn btn-grape" onclick="resetQuiz()">再玩一次 ↻</button>
+    </div>
+  </section>
+
+  <!-- ============ BANK ============ -->
+  <section class="panel" id="panel-bank">
+    <h2>📚 我的字庫</h2>
+    <p class="hint">建立自己嘅單詞庫，隨時重溫！撳單詞卡可以即刻開始練習。</p>
+    <div class="bank-head">
+      <span class="bank-count"><b id="bankCount">0</b> / 1000 個單詞</span>
+      <button class="btn btn-ghost" style="padding:8px 16px; font-size:13px;" onclick="goTab('add')">＋ 加單詞</button>
+    </div>
+    <div class="bank-tools">
+      <input type="text" id="bankSearch" placeholder="🔍 搜尋單詞…" oninput="renderBank()">
+      <select id="bankSort" onchange="renderBank()">
+        <option value="az">A → Z</option>
+        <option value="za">Z → A</option>
+        <option value="short">短 → 長</option>
+        <option value="long">長 → 短</option>
+      </select>
+      <select id="bankFilter" onchange="renderBank()" style="grid-column:1/-1;">
+        <option value="all">全部單詞</option>
+        <option value="good">近5次 ≥ 80% 正確</option>
+        <option value="weak">近5次 &lt; 80%（要加油）</option>
+        <option value="new">未測驗過</option>
+      </select>
+    </div>
+    <div id="bankList"></div>
+  </section>
+</div>
+
+<footer class="site">
+  <p>💡 呢個係互動概念示範網站，靈感嚟自 <a href="https://www.threads.com/@fornext_hk/post/DeQdUYnFS7j" target="_blank" rel="noopener">ForNext Academy 嘅 Phonics 串字 App 介紹影片</a>。<br>
+  發音用瀏覽器內置語音引擎（建議用 Chrome / Safari 開啟）。</p>
+</footer>
+
+<script>
+"use strict";
+/* ================= Phonics 引擎 ================= */
+const G3 = ["tch","igh","dge","ure","ear","air","our","eau"];
+const G2 = ["ch","sh","th","wh","ph","ng","ck","qu","kn","wr","gn","mb","rh",
+  "ai","ay","ee","ea","ey","ei","ie","ue","ui","oa","ow","oe","oo","ou","oy","oi","aw","au",
+  "ar","er","ir","or","ur","ew",
+  "bl","br","cl","cr","dr","fl","fr","gl","gr","pl","pr","sc","sk","sl","sm","sn","sp","st","sw","tr","tw",
+  "scr","shr","spl","spr","str","thr","squ"];
+const G3S = new Set(G3), G2S = new Set(G2);
+
+function segment(word){
+  word = word.toLowerCase().replace(/[^a-z]/g,"");
+  const out=[]; let i=0;
+  while(i<word.length){
+    const t3=word.slice(i,i+3), t2=word.slice(i,i+2);
+    if(t3.length===3 && G3S.has(t3)){ out.push(t3); i+=3; }
+    else if(t2.length===2 && G2S.has(t2)){ out.push(t2); i+=2; }
+    else { out.push(word[i]); i+=1; }
+  }
+  return out;
+}
+/* 詞目分析（Headword） */
+const IRREG={went:"go",gone:"go",horses:"horse",children:"child",mice:"mouse",teeth:"tooth",
+  feet:"foot",men:"man",women:"woman",better:"good",best:"good",ate:"eat",ran:"run",saw:"see",did:"do"};
+function headword(w){
+  w=w.toLowerCase();
+  if(IRREG[w]) return IRREG[w];
+  if(w.length>4 && w.endsWith("ies")) return w.slice(0,-3)+"y";
+  if(w.length>4 && w.endsWith("es") && /(s|x|z|ch|sh)$/.test(w.slice(0,-2))) return w.slice(0,-2);
+  if(w.length>3 && w.endsWith("s") && !w.endsWith("ss")) return w.slice(0,-1);
+  return null;
+}
+/* 常犯錯誤提示庫 */
+const TRICKY={
+  stomach:{note:"⚠️「ch」喺呢度讀 /k/ 音（唔係 /tʃ/）！好多人都會串錯。",t:["ch"]},
+  chair:{note:"💡「ch」讀 /tʃ/ 音，「ai」讀長音 /eə/，記住唔好串做 *chare。",t:["ch","ai"]},
+  butterfly:{note:"💡「tt」雙寫只發一個 /t/ 音，唔好漏咗其中一個 t！",t:["tt"]},
+  backpack:{note:"💡「ck」發 /k/ 音，兩個 k 音合二為一，記住唔好串做 *bakpak。",t:["ck"]},
+  blanket:{note:"💡「nk」係鼻音組合，讀起嚟似 /ŋk/，唔好串做 *blenket。",t:["nk"]},
+  crocodile:{note:"💡「le」結尾讀 /əl/ 輕音，好易漏咗個 e！",t:["le"]},
+  libra:{note:"💡「br」係連音（blend），一口氣讀出，唔好加多個母音。",t:["br"]}
+};
+function trickyFor(w){ return TRICKY[w.toLowerCase()]||null; }
+
+/* ================= 語音 ================= */
+let slowMode=false;
+function speak(text, rate){
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="en-GB"; u.rate=(rate!==undefined?rate:(slowMode?0.5:1));
+    const vs=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith("en"));
+    if(vs) u.voice=vs;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function speakGrapheme(g){ speak(g, slowMode?0.45:0.7); }
+function speakWhole(){ const w=currentPractice; if(w) speak(w, slowMode?0.5:0.9); }
+function toggleSlow(){ slowMode=!slowMode; document.getElementById("btnSlow").classList.toggle("on",slowMode); }
+
+/* ================= 字庫（localStorage） ================= */
+const LS_KEY="phonics_bank_v1";
+let bank={};
+function loadBank(){
+  try{ bank=JSON.parse(localStorage.getItem(LS_KEY))||{}; }catch(e){ bank={}; }
+  if(!Object.keys(bank).length){
+    ["backpack","butterfly","chair","crocodile","blanket","libra","stomach"].forEach((w,i)=>{
+      bank[w]={seg:segment(w), added:Date.now()-i*86400000,
+        attempts: w==="butterfly"?[1,0,1]: w==="stomach"?[0,1]: w==="crocodile"?[1,1]: []};
+    });
+    saveBank();
+  }
+}
+function saveBank(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(bank)); }catch(e){} }
+function accuracy(w){ const a=bank[w].attempts.slice(-5); if(!a.length) return null;
+  return Math.round(a.reduce((s,x)=>s+x,0)/a.length*100); }
+loadBank();
+
+/* ================= Tabs ================= */
+function goTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.tab===name));
+  document.querySelectorAll("section.panel").forEach(p=>p.classList.toggle("on",p.id==="panel-"+name));
+  document.querySelectorAll(".step").forEach(s=>s.classList.toggle("on",s.dataset.goto===name));
+  window.scrollTo({top:document.querySelector(".tabs").offsetTop-8,behavior:"smooth"});
+  if(name==="bank") renderBank();
+  if(name==="practice") refreshPracticeSelect();
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>goTab(t.dataset.tab)));
+document.querySelectorAll(".step").forEach(s=>s.addEventListener("click",()=>goTab(s.dataset.goto)));
+
+/* ================= 加單詞 ================= */
+function renderWordInputs(){
+  const n=parseInt(document.getElementById("wordCount").value,10);
+  const box=document.getElementById("wordInputs"); box.innerHTML="";
+  for(let i=0;i<n;i++){
+    const row=document.createElement("div");
+    row.innerHTML=`<div class="word-input-row">
+        <input type="text" placeholder="單詞 ${i+1}，例如 blanket" maxlength="20" data-i="${i}">
+        <span class="tick" id="tick${i}">·</span>
+      </div><div class="breakdown" id="bd${i}"></div>`;
+    box.appendChild(row);
+  }
+  box.querySelectorAll("input").forEach(inp=>{
+    let timer=null;
+    inp.addEventListener("input",()=>{
+      clearTimeout(timer);
+      timer=setTimeout(()=>checkWordInput(inp),800);
+    });
+  });
+}
+function checkWordInput(inp){
+  const i=inp.dataset.i, v=inp.value.trim().toLowerCase().replace(/[^a-z]/g,"");
+  const tick=document.getElementById("tick"+i), bd=document.getElementById("bd"+i);
+  if(!v){ tick.textContent="·"; tick.className="tick"; bd.className="breakdown"; bd.innerHTML=""; return; }
+  const seg=segment(v);
+  tick.textContent="✅"; tick.className="tick ok";
+  let html=`<span class="seg">${seg.join(" · ")}</span>　<span style="color:#9A8B84">（${seg.length} 個音素）</span>`;
+  const hw=headword(v);
+  if(hw && hw!==v) html+=`<div class="headword">📖 詞目分析：<b>${v}</b> → 詞目 <b>${hw}</b></div>`;
+  bd.innerHTML=html; bd.className="breakdown show";
+}
+function addAllWords(){
+  const inputs=document.querySelectorAll("#wordInputs input");
+  let added=0, dup=0;
+  inputs.forEach(inp=>{
+    const v=inp.value.trim().toLowerCase().replace(/[^a-z]/g,"");
+    if(!v) return;
+    if(bank[v]){ dup++; return; }
+    bank[v]={seg:segment(v), added:Date.now(), attempts:[]};
+    added++;
+  });
+  if(!added && !dup){ alert("請先輸入至少一個英文單詞 😊"); return; }
+  saveBank(); renderWordInputs();
+  alert(`🎉 成功加入 ${added} 個新單詞！${dup?`\n（${dup} 個已經喺字庫）`:""}`);
+  goTab("bank");
+}
+renderWordInputs();
+
+/* ================= 練習 ================= */
+let currentPractice=null, pracSeg=[], pracPlaced=[], pracTray=[], pracGuiding=false;
+function refreshPracticeSelect(){
+  const sel=document.getElementById("practiceWord");
+  const words=Object.keys(bank).sort();
+  sel.innerHTML=words.map(w=>`<option value="${w}">${w}</option>`).join("");
+  if(words.length && !words.includes(currentPractice)) currentPractice=words[0];
+  if(currentPractice) sel.value=currentPractice;
+}
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+function startPractice(){
+  const w=document.getElementById("practiceWord").value;
+  if(!w||!bank[w]) return;
+  currentPractice=w; pracSeg=bank[w].seg.slice();
+  pracPlaced=new Array(pracSeg.length).fill(null);
+  pracTray=shuffle(pracSeg.map((g,i)=>({g, key:i})));
+  pracGuiding=false;
+  hideResult("pracResult"); document.getElementById("guideBubble").className="guide-bubble";
+  renderPractice();
+  speak(w,0.9);
+}
+function renderPractice(){
+  const pc=document.getElementById("phonemeCards"); pc.innerHTML="";
+  pracSeg.forEach((g,i)=>{
+    const d=document.createElement("div");
+    d.className="phon c"+(i%8); d.id="phon"+i;
+    d.innerHTML=`${g}<small>音素 ${i+1} 🔊</small>`;
+    d.onclick=()=>{speakGrapheme(g); d.classList.add("hl"); setTimeout(()=>d.classList.remove("hl"),600);};
+    pc.appendChild(d);
+  });
+  const sl=document.getElementById("pracSlots"); sl.innerHTML="";
+  pracPlaced.forEach((t,i)=>{
+    const s=document.createElement("div");
+    s.className="slot"+(t?" filled":""); s.dataset.slot=i;
+    s.textContent=t?t.g:"";
+    s.title="撳一下拎返出嚟";
+    s.onclick=()=>{ if(t&&!pracGuiding) returnTile("prac",i); };
+    s.ondragover=e=>e.preventDefault();
+    s.ondrop=e=>{ e.preventDefault(); const key=e.dataTransfer.getData("text/plain"); placeTile("prac",key,i); };
+    sl.appendChild(s);
+  });
+  const tr=document.getElementById("pracTray"); tr.innerHTML="";
+  pracTray.forEach(t=>{
+    if(t.placed) return;
+    const d=document.createElement("div");
+    d.className="tile"; d.textContent=t.g; d.draggable=true;
+    d.dataset.key=t.key;
+    d.ondragstart=e=>e.dataTransfer.setData("text/plain",t.key);
+    d.onclick=()=>placeTile("prac",t.key, pracPlaced.indexOf(null));
+    tr.appendChild(d);
+  });
+  document.getElementById("pracCheck").disabled = pracPlaced.includes(null);
+}
+function placeTile(kind,key,slotIdx){
+  key=parseInt(key,10);
+  const tray = kind==="prac"?pracTray:quizTray;
+  const placed = kind==="prac"?pracPlaced:quizPlaced;
+  if(isNaN(slotIdx)||slotIdx<0) return;
+  if(placed[slotIdx]!==null) return;
+  const t=tray.find(x=>x.key===key && !x.placed);
+  if(!t) return;
+  t.placed=true; placed[slotIdx]=t;
+  speakGrapheme(t.g);
+  kind==="prac"?renderPractice():renderQuiz();
+}
+function returnTile(kind,slotIdx){
+  const tray = kind==="prac"?pracTray:quizTray;
+  const placed = kind==="prac"?pracPlaced:quizPlaced;
+  const t=placed[slotIdx]; if(!t) return;
+  t.placed=false; placed[slotIdx]=null;
+  kind==="prac"?renderPractice():renderQuiz();
+}
+function hideResult(id){ const r=document.getElementById(id); r.className="result"; r.innerHTML=""; }
+function checkPractice(){
+  const ok=pracPlaced.every((t,i)=>t&&t.g===pracSeg[i]);
+  const r=document.getElementById("pracResult");
+  if(ok){
+    r.className="result show good";
+    r.innerHTML=`🎉 叻叻！<b>${currentPractice}</b> 拼啱喇！<br><span style="font-weight:400">${pracSeg.join(" · ")}</span>`;
+    speak(currentPractice+"! Great job!",0.95);
+    recordAttempt(currentPractice,true);
+  }else{
+    r.className="result show bad";
+    r.innerHTML=`😅 差少少！撳錯咗嘅字卡可以拎返出嚟再試，聽多次音素先啦 🔊`;
+    speak("Try again!",0.9);
+    recordAttempt(currentPractice,false);
+    const slots=document.getElementById("pracSlots").children;
+    pracPlaced.forEach((t,i)=>{ if(t) slots[i].classList.add(t.g===pracSeg[i]?"right":"wrong"); });
+  }
+}
+function recordAttempt(w,ok){ if(bank[w]){ bank[w].attempts.push(ok?1:0); saveBank(); } }
+function replayGuide(){
+  if(!currentPractice||pracGuiding) return;
+  pracGuiding=true;
+  pracPlaced=new Array(pracSeg.length).fill(null);
+  pracTray.forEach(t=>t.placed=false);
+  const bb=document.getElementById("guideBubble");
+  bb.className="guide-bubble show";
+  let i=0;
+  renderPractice();
+  function stepFn(){
+    if(i>=pracSeg.length){ pracGuiding=false; bb.className="guide-bubble";
+      document.getElementById("pracCheck").disabled=false; return; }
+    const g=pracSeg[i];
+    bb.innerHTML=`🎬 導覽 ${i+1}/${pracSeg.length}：將 <b>「${g}」</b> 放到第 ${i+1} 格`;
+    const t=pracTray.find(x=>x.g===g && !x.placed);
+    if(t){ t.placed=true; pracPlaced[i]=t; }
+    const card=document.getElementById("phon"+i);
+    if(card){ card.classList.add("hl"); setTimeout(()=>card.classList.remove("hl"),700); }
+    speakGrapheme(g);
+    renderPractice();
+    document.getElementById("pracCheck").disabled=true;
+    i++; setTimeout(stepFn, 1400);
+  }
+  stepFn();
+}
+refreshPracticeSelect();
+
+/* ================= 測驗 ================= */
+let quizWords=[], quizIdx=0, quizSeg=[], quizPlaced=[], quizTray=[], quizTimerId=null, quizLeft=50, quizScore=0, quizLocked=false;
+const DIFF_LABEL={easy:"簡單",normal:"普通",hard:"困難"};
+function pickQuizWords(diff){
+  const words=Object.keys(bank);
+  let pool=words.filter(w=> diff==="easy"?w.length<=5 : diff==="hard"?w.length>=7 : true);
+  if(pool.length<3) pool=words;
+  return shuffle(pool).slice(0,3);
+}
+function startQuiz(){
+  const diff=document.getElementById("quizDiff").value;
+  quizWords=pickQuizWords(diff);
+  if(!quizWords.length){ alert("字庫係空嘅，請先加單詞 😊"); goTab("add"); return; }
+  quizIdx=0; quizScore=0;
+  document.getElementById("quizSetup").style.display="none";
+  document.getElementById("quizDone").style.display="none";
+  document.getElementById("quizPlay").style.display="block";
+  document.getElementById("quizTag").textContent="難度："+DIFF_LABEL[diff];
+  loadQuizWord();
+}
+function loadQuizWord(){
+  const w=quizWords[quizIdx];
+  quizSeg=bank[w].seg.slice();
+  quizPlaced=new Array(quizSeg.length).fill(null);
+  quizTray=shuffle(quizSeg.map((g,i)=>({g,key:i})));
+  quizLocked=false;
+  hideResult("quizResult");
+  const m=document.getElementById("quizMistake"); m.className="mistake"; m.innerHTML="";
+  document.getElementById("quizProg").textContent=`第 ${quizIdx+1}/${quizWords.length} 個單詞`;
+  document.getElementById("quizNext").disabled=true;
+  renderQuiz(); startTimer();
+  setTimeout(()=>speak(w,0.85),400);
+}
+function renderQuiz(){
+  const sl=document.getElementById("quizSlots"); sl.innerHTML="";
+  quizPlaced.forEach((t,i)=>{
+    const s=document.createElement("div");
+    s.className="slot"+(t?" filled":""); s.textContent=t?t.g:"";
+    s.onclick=()=>{ if(t&&!quizLocked) returnTile("quiz",i); };
+    s.ondragover=e=>e.preventDefault();
+    s.ondrop=e=>{ e.preventDefault(); if(!quizLocked) placeTile("quiz",e.dataTransfer.getData("text/plain"),i); };
+    sl.appendChild(s);
+  });
+  const tr=document.getElementById("quizTray"); tr.innerHTML="";
+  quizTray.forEach(t=>{
+    if(t.placed) return;
+    const d=document.createElement("div");
+    d.className="tile"; d.textContent=t.g; d.draggable=true; d.dataset.key=t.key;
+    d.ondragstart=e=>e.dataTransfer.setData("text/plain",t.key);
+    d.onclick=()=>{ if(!quizLocked) placeTile("quiz",t.key,quizPlaced.indexOf(null)); };
+    tr.appendChild(d);
+  });
+}
+function speakQuizWord(){ speak(quizWords[quizIdx], slowMode?0.5:0.85); }
+function startTimer(){
+  clearInterval(quizTimerId);
+  quizLeft=50; paintTimer();
+  quizTimerId=setInterval(()=>{
+    quizLeft--; paintTimer();
+    if(quizLeft<=0){ clearInterval(quizTimerId); checkQuiz(true); }
+  },1000);
+}
+function paintTimer(){
+  const el=document.getElementById("quizTimer");
+  el.textContent="00:"+String(Math.max(0,quizLeft)).padStart(2,"0");
+  el.classList.toggle("low",quizLeft<=10);
+}
+function checkQuiz(timeout){
+  if(quizLocked) return;
+  if(!timeout && quizPlaced.includes(null)){ alert("仲有空格未填呀 😊"); return; }
+  quizLocked=true; clearInterval(quizTimerId);
+  const w=quizWords[quizIdx];
+  const ok=!quizPlaced.includes(null) && quizPlaced.every((t,i)=>t.g===quizSeg[i]);
+  const r=document.getElementById("quizResult");
+  const slots=document.getElementById("quizSlots").children;
+  quizPlaced.forEach((t,i)=>{ if(t) slots[i].classList.add(t.g===quizSeg[i]?"right":"wrong"); });
+  if(ok){
+    quizScore++;
+    r.className="result show good";
+    r.innerHTML=`🎉 答啱喇！<b>${w}</b> ${timeout?"（時間到，但你拼啱咗！）":""}`;
+    speak("Correct! "+w,0.95);
+    recordAttempt(w,true);
+  }else{
+    r.className="result show bad";
+    r.innerHTML=`😅 今次錯咗，正確串法係 <b>${w}</b>。睇下邊個音素最易錯：`;
+    speak(w,0.8);
+    recordAttempt(w,false);
+  }
+  showMistake(w,ok);
+  document.getElementById("quizNext").disabled=false;
+  document.getElementById("quizNext").textContent = quizIdx<quizWords.length-1 ? "下一個 →" : "睇成績 🏆";
+}
+function showMistake(w,wasOk){
+  const m=document.getElementById("quizMistake");
+  const tr=trickyFor(w);
+  let html=`<div><b>🔍 音素拆解：${w}</b></div><div style="margin-top:6px;">`;
+  quizSeg.forEach(g=>{
+    const isT=tr&&tr.t.includes(g);
+    html+=`<span class="mini-phon ${isT?"tricky":"okp"}">${g}</span>`;
+  });
+  html+=`</div>`;
+  if(tr) html+=`<div class="note">${tr.note}</div>`;
+  else html+=`<div class="note">💡 每個音素都好重要，逐個音讀出嚟再拼多次啦！</div>`;
+  if(!wasOk) html+=`<div class="note" style="margin-top:6px;">你嘅答案：<b>${quizPlaced.map(t=>t?t.g:"＿").join("")}</b>　→　正確：<b>${w}</b></div>`;
+  m.innerHTML=html; m.className="mistake show";
+}
+function nextQuizWord(){
+  if(quizIdx<quizWords.length-1){ quizIdx++; loadQuizWord(); }
+  else{
+    document.getElementById("quizPlay").style.display="none";
+    const d=document.getElementById("quizDone"); d.style.display="block";
+    document.getElementById("quizScore").textContent=`${quizScore} / ${quizWords.length} 答啱！`;
+    document.getElementById("quizScoreSub").textContent =
+      quizScore===quizWords.length?"🌟 滿分！你係串字小達人！":
+      quizScore>=1?"👍 好叻！錯咗嘅單詞會喺字庫標示，記得去重溫呀！":"💪 唔緊要，去字庫重溫下再挑戰啦！";
+    speak(quizScore===quizWords.length?"Perfect!":"Well done!",0.95);
+  }
+}
+function resetQuiz(){
+  document.getElementById("quizDone").style.display="none";
+  document.getElementById("quizSetup").style.display="block";
+}
+
+/* ================= 字庫 ================= */
+function renderBank(){
+  const q=document.getElementById("bankSearch").value.trim().toLowerCase();
+  const sort=document.getElementById("bankSort").value;
+  const filt=document.getElementById("bankFilter").value;
+  let words=Object.keys(bank);
+  document.getElementById("bankCount").textContent=words.length;
+  if(q) words=words.filter(w=>w.includes(q));
+  words=words.filter(w=>{
+    const a=accuracy(w);
+    if(filt==="good") return a!==null&&a>=80;
+    if(filt==="weak") return a!==null&&a<80;
+    if(filt==="new") return a===null;
+    return true;
+  });
+  words.sort((a,b)=> sort==="az"?a.localeCompare(b) : sort==="za"?b.localeCompare(a)
+    : sort==="short"?a.length-b.length||a.localeCompare(b) : b.length-a.length||a.localeCompare(b));
+  const list=document.getElementById("bankList");
+  if(!words.length){ list.innerHTML=`<div class="empty">😶 冇單詞呀…<br>去「加單詞」加啲生字啦！</div>`; return; }
+  list.innerHTML="";
+  words.forEach(w=>{
+    const a=accuracy(w);
+    const cls=a===null?"na":a>=80?"high":a>=50?"mid":"low";
+    const txt=a===null?"未測驗":a+"%";
+    const card=document.createElement("div");
+    card.className="wcard";
+    card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;">
+        <span class="w">${w}</span>
+        <span><span class="acc ${cls}">近5次 ${txt}</span>
+        <button class="del" title="刪除">🗑️</button></span>
+      </div>
+      <div class="segline">${bank[w].seg.join(" · ")}</div>
+      <div class="meta"><span>點一下開始溫習 →</span><span>${bank[w].attempts.length} 次嘗試</span></div>`;
+    card.querySelector(".del").onclick=e=>{ e.stopPropagation();
+      if(confirm(`刪除「${w}」？`)){ delete bank[w]; saveBank(); renderBank(); } };
+    card.onclick=()=>{ currentPractice=w; goTab("practice"); refreshPracticeSelect(); startPractice(); };
+    list.appendChild(card);
+  });
+}
+renderBank();
+</script>
+</body>
+</html>
