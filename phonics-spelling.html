@@ -191,7 +191,7 @@ footer.site a{color:var(--grape);}
   <!-- ============ PRACTICE ============ -->
   <section class="panel" id="panel-practice">
     <h2>🧩 Phonics 練習</h2>
-    <p class="hint">撳音素卡聽發音 🔊，將下面嘅字卡拖（或撳）到正確嘅方塊，拼出成個單詞！</p>
+    <p class="hint">撳音素卡聽<b>拼音讀音</b> 🔊（phonics 音，唔係字母名），將下面嘅字卡拖（或撳）到正確嘅方塊，拼出成個單詞！</p>
     <label class="lbl">揀一個單詞嚟練習</label>
     <div class="row">
       <select id="practiceWord" class="count-sel" onchange="startPractice()"></select>
@@ -330,6 +330,26 @@ const TRICKY={
 };
 function trickyFor(w){ return TRICKY[w.toLowerCase()]||null; }
 
+/* 音素 → 拼音讀音對照（唔係字母名，係 phonics 發音；用近似拼寫等 TTS 讀出） */
+const SOUND={
+ 'a':'ah','b':'buh','c':'kuh','d':'duh','e':'eh','f':'fff','g':'guh','h':'huh',
+ 'i':'ih','j':'juh','k':'kuh','l':'lll','m':'mmm','n':'nnn','o':'aw','p':'puh',
+ 'q':'kwuh','r':'rrr','s':'sss','t':'tuh','u':'uh','v':'vvv','w':'wuh','x':'ks','y':'yuh','z':'zzz',
+ 'ch':'chuh','sh':'shh','th':'thuh','wh':'wuh','ph':'fff','ng':'ng','nk':'ngk','ck':'kuh',
+ 'tch':'chuh','dge':'juh','igh':'eye','ure':'yoor','ear':'eer','air':'air','our':'our','eau':'oh',
+ 'ai':'ay','ay':'ay','ee':'eee','ea':'eee','ey':'ay','ei':'ay','ie':'eee','ue':'oo','ui':'oo',
+ 'oa':'oh','ow':'ow','oe':'oh','oo':'ooo','ou':'ow','oy':'oy','oi':'oy','aw':'aw','au':'aw',
+ 'ar':'ar','er':'ur','ir':'ur','or':'or','ur':'ur','ew':'yoo',
+ 'kn':'nuh','wr':'ruh','gn':'nuh','mb':'mmm','rh':'ruh','qu':'kwuh',
+ 'bl':'buhl','br':'bruh','cl':'kluh','cr':'kruh','dr':'druh','fl':'fluh','fr':'fruh',
+ 'gl':'gluh','gr':'gruh','pl':'pluh','pr':'pruh','sc':'skuh','sk':'skuh','sl':'sluh',
+ 'sm':'smuh','sn':'snuh','sp':'spuh','st':'stuh','sw':'swuh','tr':'truh','tw':'twuh',
+ 'scr':'skruh','shr':'shruh','spl':'spluh','spr':'spruh','str':'struh','thr':'thruh','squ':'skwuh',
+ 'bb':'buh','cc':'kuh','dd':'duh','ff':'fff','gg':'guh','ll':'lll','mm':'mmm','nn':'nnn',
+ 'pp':'puh','rr':'rrr','ss':'sss','tt':'tuh','zz':'zzz'
+};
+function phonicsSound(g){ return SOUND[g.toLowerCase()]||g; }
+
 /* ================= 語音 ================= */
 let slowMode=false;
 function speak(text, rate){
@@ -342,7 +362,7 @@ function speak(text, rate){
     speechSynthesis.speak(u);
   }catch(e){}
 }
-function speakGrapheme(g){ speak(g, slowMode?0.45:0.7); }
+function speakGrapheme(g){ speak(phonicsSound(g), slowMode?0.5:0.95); }
 function speakWhole(){ const w=currentPractice; if(w) speak(w, slowMode?0.5:0.9); }
 function toggleSlow(){ slowMode=!slowMode; document.getElementById("btnSlow").classList.toggle("on",slowMode); }
 
@@ -450,7 +470,7 @@ function renderPractice(){
   pracSeg.forEach((g,i)=>{
     const d=document.createElement("div");
     d.className="phon c"+(i%8); d.id="phon"+i;
-    d.innerHTML=`${g}<small>音素 ${i+1} 🔊</small>`;
+    d.innerHTML=`${g}<small>/${phonicsSound(g)}/ · 音素 ${i+1} 🔊</small>`;
     d.onclick=()=>{speakGrapheme(g); d.classList.add("hl"); setTimeout(()=>d.classList.remove("hl"),600);};
     pc.appendChild(d);
   });
