@@ -367,7 +367,7 @@ function speakWhole(){ const w=currentPractice; if(w) speak(w, slowMode?0.5:0.9)
 function toggleSlow(){ slowMode=!slowMode; document.getElementById("btnSlow").classList.toggle("on",slowMode); }
 
 /* ================= 字庫（localStorage） ================= */
-const LS_KEY="phonics_bank_v1";
+const LS_KEY="phonics_bank_v2";
 let bank={};
 function loadBank(){
   try{ bank=JSON.parse(localStorage.getItem(LS_KEY))||{}; }catch(e){ bank={}; }
