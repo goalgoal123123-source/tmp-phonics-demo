@@ -99,6 +99,14 @@ input[type=text]:focus, select:focus{outline:none; border-color:var(--grape);}
 .tool{flex:1; min-width:100px; border:2px solid #EAD9C2; background:#fff; border-radius:12px; padding:9px 4px;
   font-family:inherit; font-weight:800; font-size:13.5px; cursor:pointer; color:var(--ink);}
 .tool.on{background:#FFF3D6; border-color:var(--sun);}
+.pickgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; max-height:190px; overflow-y:auto;
+  background:#FFFEFB; border:2px solid #F0E4CE; border-radius:12px; padding:8px; margin-top:8px;}
+.pickgrid label{display:flex; align-items:center; gap:5px; background:#fff; border:1.5px solid #EFE3CC;
+  border-radius:9px; padding:7px 6px; font-size:13px; font-weight:700; cursor:pointer;}
+.pickgrid label:has(input:checked){border-color:var(--grape); background:#F1EEFF;}
+.pickgrid input{accent-color:var(--grape); width:15px; height:15px; margin:0; flex:none;}
+.rangechips{display:flex; gap:6px; flex-wrap:wrap;}
+.rangechips .tool{flex:1; min-width:90px;}
 .big-check{width:100%; margin-top:10px; font-size:17px; padding:15px;}
 .result{border-radius:14px; padding:14px; margin-top:12px; font-weight:700; display:none;}
 .result.show{display:block;}
@@ -192,11 +200,29 @@ footer.site a{color:var(--grape);}
   <section class="panel" id="panel-practice">
     <h2>🧩 Phonics 練習</h2>
     <p class="hint">撳音素卡聽<b>拼音讀音</b> 🔊（phonics 音，唔係字母名），將下面嘅字卡拖（或撳）到正確嘅方塊，拼出成個單詞！</p>
-    <label class="lbl">揀一個單詞嚟練習</label>
-    <div class="row">
-      <select id="practiceWord" class="count-sel" onchange="startPractice()"></select>
-      <button class="btn btn-ghost" onclick="startPractice()">↻</button>
+    <label class="lbl">練習範圍（揀要練嘅單詞）</label>
+    <div class="rangechips" id="pracChips">
+      <button class="tool on" data-k="prac" data-m="all" onclick="setRangeMode('prac','all')">📚 全部</button>
+      <button class="tool" data-k="prac" data-m="custom" onclick="setRangeMode('prac','custom')">☑️ 自選</button>
+      <button class="tool" data-k="prac" data-m="weak" onclick="setRangeMode('prac','weak')">💪 需加強</button>
     </div>
+    <div id="pracPick" style="display:none;">
+      <div class="row" style="margin-top:8px;">
+        <button class="btn btn-ghost" style="flex:1;padding:8px;font-size:13px;" onclick="pickAll('prac')">全選</button>
+        <button class="btn btn-ghost" style="flex:1;padding:8px;font-size:13px;" onclick="pickNone('prac')">清除</button>
+      </div>
+      <div class="pickgrid" id="pracGrid"></div>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn btn-grape" style="flex:1;" onclick="startPracticeRange()">開始練習 ▶</button>
+      <button class="tool" style="flex:0 0 auto; min-width:52px;" onclick="shufflePracOrder()" title="隨機排序">🔀</button>
+    </div>
+    <div class="row" style="margin-top:8px; align-items:center;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="pracNav(-1)">◀ 上一個</button>
+      <span id="pracPos" style="flex:1;text-align:center;font-weight:800;font-size:14px;"></span>
+      <button class="btn btn-ghost" style="flex:1;" onclick="pracNav(1)">下一個 ▶</button>
+    </div>
+    <div style="height:10px;"></div>
     <div class="toolbar">
       <button class="tool" id="btnWhole" onclick="speakWhole()">🔊 整詞</button>
       <button class="tool" id="btnSlow" onclick="toggleSlow()">🐢 0.5x 慢速</button>
@@ -217,13 +243,37 @@ footer.site a{color:var(--grape);}
     <h2>📝 串字測驗</h2>
     <p class="hint">聽發音拼出單詞，限時挑戰！錯咗唔緊要，系統會話你知邊個音素最易錯 ✅</p>
     <div id="quizSetup">
-      <label class="lbl">難度</label>
-      <div class="row">
-        <select id="quizDiff" class="count-sel">
-          <option value="easy">😊 簡單（短單詞）</option>
-          <option value="normal" selected>🙂 普通</option>
-          <option value="hard">😈 困難（長單詞）</option>
-        </select>
+      <label class="lbl">測驗範圍（揀要考嘅單詞）</label>
+      <div class="rangechips" id="quizChips">
+        <button class="tool on" data-k="quiz" data-m="all" onclick="setRangeMode('quiz','all')">📚 全部</button>
+        <button class="tool" data-k="quiz" data-m="custom" onclick="setRangeMode('quiz','custom')">☑️ 自選</button>
+        <button class="tool" data-k="quiz" data-m="weak" onclick="setRangeMode('quiz','weak')">💪 需加強</button>
+      </div>
+      <div id="quizPick" style="display:none;">
+        <div class="row" style="margin-top:8px;">
+          <button class="btn btn-ghost" style="flex:1;padding:8px;font-size:13px;" onclick="pickAll('quiz')">全選</button>
+          <button class="btn btn-ghost" style="flex:1;padding:8px;font-size:13px;" onclick="pickNone('quiz')">清除</button>
+        </div>
+        <div class="pickgrid" id="quizGrid"></div>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <div style="flex:1;">
+          <label class="lbl" style="margin-top:0;">難度</label>
+          <select id="quizDiff" class="count-sel">
+            <option value="easy">😊 簡單（短單詞）</option>
+            <option value="normal" selected>🙂 普通</option>
+            <option value="hard">😈 困難（長單詞）</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label class="lbl" style="margin-top:0;">題數</label>
+          <select id="quizCount" class="count-sel">
+            <option value="3" selected>3 題</option>
+            <option value="5">5 題</option>
+            <option value="10">10 題</option>
+            <option value="all">全部</option>
+          </select>
+        </div>
       </div>
       <button class="btn btn-coral big-check" onclick="startQuiz()">開始測驗 🚀</button>
     </div>
@@ -391,7 +441,8 @@ function goTab(name){
   document.querySelectorAll(".step").forEach(s=>s.classList.toggle("on",s.dataset.goto===name));
   window.scrollTo({top:document.querySelector(".tabs").offsetTop-8,behavior:"smooth"});
   if(name==="bank") renderBank();
-  if(name==="practice") refreshPracticeSelect();
+  if(name==="practice"){ renderPickGrid("prac"); if(!pracOrder.length) startPracticeRange(); }
+  if(name==="quiz") renderPickGrid("quiz");
 }
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>goTab(t.dataset.tab)));
 document.querySelectorAll(".step").forEach(s=>s.addEventListener("click",()=>goTab(s.dataset.goto)));
@@ -444,20 +495,82 @@ function addAllWords(){
 }
 renderWordInputs();
 
+/* ================= 範圍挑選（練習＋測驗共用） ================= */
+const rangeState={ prac:{mode:"all",custom:new Set()}, quiz:{mode:"all",custom:new Set()} };
+function setRangeMode(kind,mode){
+  rangeState[kind].mode=mode;
+  document.querySelectorAll("#"+kind+"Chips .tool").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
+  document.getElementById(kind==="prac"?"pracPick":"quizPick").style.display = mode==="custom"?"block":"none";
+  if(mode==="custom") renderPickGrid(kind);
+}
+function renderPickGrid(kind){
+  const grid=document.getElementById(kind==="prac"?"pracGrid":"quizGrid");
+  const words=Object.keys(bank).sort();
+  const sel=rangeState[kind].custom;
+  grid.innerHTML="";
+  words.forEach(w=>{
+    const lab=document.createElement("label");
+    const cb=document.createElement("input");
+    cb.type="checkbox"; cb.checked=sel.has(w);
+    cb.onchange=()=>{ cb.checked?sel.add(w):sel.delete(w); };
+    lab.appendChild(cb);
+    lab.appendChild(document.createTextNode(w));
+    grid.appendChild(lab);
+  });
+}
+function pickAll(kind){
+  Object.keys(bank).forEach(w=>rangeState[kind].custom.add(w));
+  renderPickGrid(kind);
+}
+function pickNone(kind){
+  rangeState[kind].custom.clear();
+  renderPickGrid(kind);
+}
+function getRangeWords(kind){
+  const words=Object.keys(bank).sort();
+  const mode=rangeState[kind].mode;
+  if(mode==="weak") return words.filter(w=>{ const a=accuracy(w); return a===null||a<80; });
+  if(mode==="custom") return words.filter(w=>rangeState[kind].custom.has(w));
+  return words;
+}
+
 /* ================= 練習 ================= */
 let currentPractice=null, pracSeg=[], pracPlaced=[], pracTray=[], pracGuiding=false;
-function refreshPracticeSelect(){
-  const sel=document.getElementById("practiceWord");
-  const words=Object.keys(bank).sort();
-  sel.innerHTML=words.map(w=>`<option value="${w}">${w}</option>`).join("");
-  if(words.length && !words.includes(currentPractice)) currentPractice=words[0];
-  if(currentPractice) sel.value=currentPractice;
+let pracOrder=[], pracIdx=0;
+function startPracticeRange(){
+  pracOrder=getRangeWords("prac");
+  if(!pracOrder.length){
+    const m=rangeState.prac.mode;
+    alert(m==="custom"?"請喺下面剔選至少一個單詞 ☑️":m==="weak"?"暫時冇需要加強嘅單詞，全部都好叻！🎉":"字庫係空嘅，請先加單詞 😊");
+    if(rangeState.prac.mode==="all") goTab("add");
+    return;
+  }
+  pracIdx=0;
+  loadPracticeWord();
 }
-function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
-function startPractice(){
-  const w=document.getElementById("practiceWord").value;
-  if(!w||!bank[w]) return;
-  currentPractice=w; pracSeg=bank[w].seg.slice();
+function shufflePracOrder(){
+  if(!pracOrder.length){ startPracticeRange(); return; }
+  pracOrder=shuffle(pracOrder); pracIdx=0; loadPracticeWord();
+}
+function pracNav(d){
+  if(!pracOrder.length){ startPracticeRange(); return; }
+  pracIdx=(pracIdx+d+pracOrder.length)%pracOrder.length;
+  loadPracticeWord();
+}
+function practiceWordNow(w){
+  if(!bank[w]) return;
+  setRangeMode("prac","custom");
+  rangeState.prac.custom=new Set([w]);
+  renderPickGrid("prac");
+  goTab("practice");
+  startPracticeRange();
+}
+function loadPracticeWord(){
+  const w=pracOrder[pracIdx];
+  if(!w||!bank[w]){ startPracticeRange(); return; }
+  currentPractice=w;
+  document.getElementById("pracPos").textContent="第 "+(pracIdx+1)+"/"+pracOrder.length+" 個："+w;
+  pracSeg=bank[w].seg.slice();
   pracPlaced=new Array(pracSeg.length).fill(null);
   pracTray=shuffle(pracSeg.map((g,i)=>({g, key:i})));
   pracGuiding=false;
@@ -560,21 +673,28 @@ function replayGuide(){
   }
   stepFn();
 }
-refreshPracticeSelect();
-
 /* ================= 測驗 ================= */
 let quizWords=[], quizIdx=0, quizSeg=[], quizPlaced=[], quizTray=[], quizTimerId=null, quizLeft=50, quizScore=0, quizLocked=false;
 const DIFF_LABEL={easy:"簡單",normal:"普通",hard:"困難"};
-function pickQuizWords(diff){
-  const words=Object.keys(bank);
-  let pool=words.filter(w=> diff==="easy"?w.length<=5 : diff==="hard"?w.length>=7 : true);
-  if(pool.length<3) pool=words;
-  return shuffle(pool).slice(0,3);
+function pickQuizWords(){
+  const diff=document.getElementById("quizDiff").value;
+  const countSel=document.getElementById("quizCount").value;
+  let pool=getRangeWords("quiz");
+  if(!pool.length) return [];
+  let filtered=pool.filter(w=> diff==="easy"?w.length<=5 : diff==="hard"?w.length>=7 : true);
+  if(!filtered.length) filtered=pool;
+  const n = countSel==="all" ? filtered.length : Math.min(parseInt(countSel,10), filtered.length);
+  return shuffle(filtered).slice(0,n);
 }
 function startQuiz(){
   const diff=document.getElementById("quizDiff").value;
-  quizWords=pickQuizWords(diff);
-  if(!quizWords.length){ alert("字庫係空嘅，請先加單詞 😊"); goTab("add"); return; }
+  quizWords=pickQuizWords();
+  if(!quizWords.length){
+    const m=rangeState.quiz.mode;
+    alert(m==="custom"?"請喺上面剔選至少一個單詞 ☑️":m==="weak"?"暫時冇需要加強嘅單詞，全部都好叻！🎉":"字庫係空嘅，請先加單詞 😊");
+    if(m==="all") goTab("add");
+    return;
+  }
   quizIdx=0; quizScore=0;
   document.getElementById("quizSetup").style.display="none";
   document.getElementById("quizDone").style.display="none";
@@ -720,7 +840,7 @@ function renderBank(){
       <div class="meta"><span>點一下開始溫習 →</span><span>${bank[w].attempts.length} 次嘗試</span></div>`;
     card.querySelector(".del").onclick=e=>{ e.stopPropagation();
       if(confirm(`刪除「${w}」？`)){ delete bank[w]; saveBank(); renderBank(); } };
-    card.onclick=()=>{ currentPractice=w; goTab("practice"); refreshPracticeSelect(); startPractice(); };
+    card.onclick=()=>practiceWordNow(w);
     list.appendChild(card);
   });
 }
